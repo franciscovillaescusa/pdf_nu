@@ -25,7 +25,7 @@ bins = 200
 ###############################################################################
 
 # redshift dictionary
-z = {4:0, 3:0.5, 2:1, 1:2, 0:2}
+z = {4:0, 3:0.5, 2:1, 1:2, 0:3}
 
 # find the numbers that each cpu will work with
 numbers = np.where(np.arange(realizations)%nprocs==myrank)[0]

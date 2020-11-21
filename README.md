@@ -17,3 +17,5 @@ var = f['variance'][:] #variance of the neutrino density field for all simulatio
 pdf = f['pdf'][:]      #pdf of all simulations
 f.close()
 ```
+
+For instance, the pdf and the variance of the realization 13 can be obtained as ```pdf[13]``` and ```var[13]```, respectively.
