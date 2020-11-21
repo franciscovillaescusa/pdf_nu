@@ -40,7 +40,7 @@ for grid in [300, 400, 500]:
         for snapnum in [4,3,2,1,0]:
 
             # get name of output file
-            fout = '../Results_%s_%d_z=%s.hdf5'%(prefix,grid,z[snapnum])
+            fout = '../Results/Results_%s_%d_z=%s.hdf5'%(prefix,grid,z[snapnum])
             if os.path.exists(fout):  continue
 
             # define the arrays containing the variance and the pdf of the fields
