@@ -41,7 +41,7 @@ for grid in [300, 400, 500]:
 
             # get name of output file
             fout = '../Results/Results_%s_%d_z=%s.hdf5'%(prefix,grid,z[snapnum])
-            if os.path.exists(fout):  continue
+            #if os.path.exists(fout):  continue
 
             # define the arrays containing the variance and the pdf of the fields
             var     = np.zeros(realizations,        dtype=np.float64)
@@ -84,7 +84,8 @@ for grid in [300, 400, 500]:
             if myrank==0:
                 f = h5py.File(fout, 'w')
                 f.create_dataset('variance', data=var_tot)
-                f.create_dataset('pdf', data=pdf_tot)
+                f.create_dataset('pdf',      data=pdf_tot)
+                f.create_dataset('pdf_bins', data=pdf_mean)
                 f.close()
 
             # wait until master is done writting the results
