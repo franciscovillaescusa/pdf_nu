@@ -2,6 +2,7 @@ import numpy as np
 import sys,os,h5py
 import readgadget
 import MAS_library as MASL
+import smoothing_library as SL
 
 ##################################### INPUT ###################################
 # cosmology parameters
@@ -13,6 +14,12 @@ ptypes = [2]
 MAS    = 'CIC'
 do_RSD = False
 axis   = 0
+grid   = 1024
+
+# smoothing parameters
+BoxSize = 1000.0 #Mpc/h
+Filter  = 'Gaussian'
+threads = 1
 
 # pdf parameters
 bins = 200
@@ -22,7 +29,10 @@ bins = 200
 z = {10:0, 9:0.5, 8:1, 7:2, 6:3, 5:4, 4:5, 3:6, 2:7, 1:8, 0:9}
 
 # do a loop over the different grid sizes
-for grid in [300, 400, 500]:
+for R in [5.0, 7.5, 10.0]:
+
+    # compute FFT of the filter
+    W_k = SL.FT_filter(BoxSize, R, grid, Filter, threads)
 
     # do a loop over the different neutrino masses
     for cosmo,prefix in zip(['0_HR'], ['0.1eV_HR']):
@@ -31,7 +41,7 @@ for grid in [300, 400, 500]:
         for snapnum in [10,9,8,7,6,5,4,3,2,1,0]:
 
             # get name of output file
-            fout = '../Results/Results_%s_%d_z=%s.hdf5'%(prefix,grid,z[snapnum])
+            fout = '../Results/Results_Gaussian_%s_%d_z=%s.hdf5'%(prefix,R,z[snapnum])
             #if os.path.exists(fout):  continue
 
             # define the arrays containing the variance and the pdf of the fields
@@ -42,7 +52,9 @@ for grid in [300, 400, 500]:
             snapshot = '%s/%s/snapdir_%03d/snap_%03d'%(root,cosmo,snapnum,snapnum)
             delta = MASL.density_field_gadget(snapshot, ptypes, grid, MAS, do_RSD, axis)
             delta = delta/np.mean(delta, dtype=np.float64)
-            delta_min, delta_max = np.min(delta), np.max(delta)
+            delta_smoothed = SL.field_smoothing(delta, W_k, threads) #smooth the field
+            delta_min, delta_max = np.min(delta_smoothed), np.max(delta_smoothed)
+            del delta
 
             # define the pdf bins
             pdf_bins  = np.linspace(delta_min, delta_max, bins+1)
@@ -51,10 +63,11 @@ for grid in [300, 400, 500]:
 
             # compute pdf and variance
             i = 0
-            var_tot[i] = np.var(delta)
-            pdf_tot[i] = np.histogram(delta,bins=pdf_bins)[0]
+            var_tot[i] = np.var(delta_smoothed)
+            pdf_tot[i] = np.histogram(delta_smoothed,bins=pdf_bins)[0]
             pdf_tot[i] = pdf_tot[i]/pdf_width/np.sum(pdf_tot[i], dtype=np.float64)
-
+            del delta_smoothed
+            
             # only master save results to file
             f = h5py.File(fout, 'w')
             f.create_dataset('variance', data=var_tot)
