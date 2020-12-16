@@ -39,7 +39,7 @@ numbers = np.where(np.arange(realizations)%nprocs==myrank)[0]
 
 # do a loop over the different grid sizes
 #for grid in [300, 400, 500]:
-for R in [5.0, 7.5, 10.0]: #Mpc/h
+for R in [2.0, 3.0, 4.0, 5.0, 7.5, 10.0]: #Mpc/h
 
     # compute FFT of the filter
     W_k = SL.FT_filter(BoxSize, R, grid, Filter, threads)
